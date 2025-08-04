@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Mody Gaming - لعبة الثعبان النيون</title>
+<style>
+  :root{
+    --bg:#04040a;
+    --grid:#0b0f1a;
+    --neon1:#00e5ff;
+    --neon2:#7cff00;
+    --neon3:#ff00e6;
+    --neon4:#ffd400;
+    --text:#e7f6ff;
+    --danger:#ff3355;
+    --shadow: 0 0 10px rgba(0,229,255,.7), 0 0 20px rgba(0,229,255,.4), 0 0 40px rgba(0,229,255,.2);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html, body { height:100%; }
+  body{
+    margin:0;
+    background: radial-gradient(1200px 800px at 20% -10%, #0c0f1a 0%, #070914 40%, #04040a 100%), #04040a;
+    color: var(--text);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    overflow:hidden;
+  }
+
+  header{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: clamp(10px, 2.5vw, 18px) clamp(12px, 3vw, 22px);
+    gap:10px;
+    z-index:5;
+    flex-wrap: wrap;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    user-select:none;
+    min-width: 180px;
+  }
+  .logo .badge{
+    width:40px;height:40px;border-radius:12px;
+    background: radial-gradient(circle at 30% 30%, var(--neon2), transparent 60%),
+                radial-gradient(circle at 70% 60%, var(--neon1), transparent 60%),
+                #0b1220;
+    box-shadow: 0 0 25px rgba(0,229,255,.35), inset 0 0 20px rgba(124,255,0,.25);
+    border:1px solid rgba(255,255,255,.08);
+    position:relative;
+  }
+  @media (min-width:600px){
+    .logo .badge{ width:44px; height:44px; }
+  }
+  .logo .badge::after{
+    content:"";
+    position:absolute; inset:6px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .title{
+    font-weight:800;
+    letter-spacing:.5px;
+    font-size: clamp(18px, 2.2vw, 22px);
+    background: linear-gradient(90deg, var(--neon1), var(--neon3), var(--neon2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 12px rgba(0,229,255,.5);
+    white-space: nowrap;
+  }
+  .controls{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    color:#001018; background: linear-gradient(135deg, var(--neon1), #63fff8);
+    padding:10px 14px; border-radius:10px; font-weight:700;
+    box-shadow: 0 0 16px rgba(0,229,255,.5), inset 0 0 8px rgba(255,255,255,.25);
+    transition: transform .08s ease, filter .15s ease;
+    font-size: 14px;
+  }
+  .btn:hover{ transform: translateY(-2px); filter: brightness(1.05); }
+  .btn.alt{
+    background: linear-gradient(135deg, #19233a, #0f1730);
+    color: var(--text);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow: inset 0 0 20px rgba(0,229,255,.07), 0 0 10px rgba(124,255,0,.15);
+  }
+  .panel{
+    position:relative;
+    margin:0 clamp(8px, 3vw, 20px) 12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.06);
+    background: linear-gradient(180deg, rgba(10,14,26,.8), rgba(6,8,16,.9));
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 30px rgba(0,229,255,.06);
+    overflow:hidden;
+  }
+  .hud{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px clamp(10px, 2.5vw, 18px); gap:10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background: linear-gradient(180deg, rgba(0,229,255,.07), rgba(0,229,255,0));
+    flex-wrap: wrap;
+  }
+  .stat{
+    display:flex; gap:10px; align-items:center; font-weight:700; flex-wrap: wrap;
+  }
+  .pill{
+    padding:6px 10px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.1);
+    background: rgba(10,16,28,.6);
+    box-shadow: inset 0 0 14px rgba(0,229,255,.1);
+    font-size: 13px;
+  }
+
+  .grid-outer{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: clamp(6px, 2vw, 16px);
+  }
+  .grid-wrap{
+    position:relative;
+    width: min(96vw, 100vh - 220px);
+    max-width: 1000px;
+    aspect-ratio: 1/1;
+    border-radius:18px;
+    overflow:hidden;
+    background: radial-gradient(180px 120px at 70% 10%, rgba(255,0,200,.08), transparent 60%),
+                radial-gradient(220px 150px at 30% 90%, rgba(0,255,140,.08), transparent 60%),
+                #050713;
+    box-shadow: inset 0 0 40px rgba(0,229,255,.07), 0 0 60px rgba(0,0,0,.5);
+  }
+  @media (max-height: 560px) and (orientation: landscape){
+    header{ padding:8px 12px; }
+    .hud{ padding:8px 12px; }
+    .grid-wrap{ width: min(96vw, 100vh - 140px); }
+  }
+  @media (min-width: 768px) and (min-height: 700px){
+    .grid-wrap{ width: min(88vw, 86vh); }
+  }
+
+  canvas#game{
+    width:100%; height:100%; display:block;
+    image-rendering: pixelated;
+  }
+  .scanlines::after{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.02),
+      rgba(255,255,255,0.02) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+    pointer-events:none; mix-blend-mode: overlay;
+  }
+  .grid-overlay{
+    position:absolute; inset:0; pointer-events:none; opacity:.35;
+    background-image:
+      linear-gradient(to right, rgba(0,229,255,.15) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,229,255,.15) 1px, transparent 1px);
+    filter: drop-shadow(0 0 3px rgba(0,229,255,.6));
+    transition: opacity .2s ease;
+  }
+  .glow-edge{
+    position:absolute; inset:0; pointer-events:none;
+    box-shadow: inset 0 0 60px rgba(0,229,255,.18),
+                inset 0 0 140px rgba(255,0,200,.12),
+                inset 0 0 200px rgba(124,255,0,.10);
+  }
+  .splash{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(2px);
+    background: radial-gradient(600px 300px at 50% 0%, rgba(0,229,255,.15), transparent 60%);
+    pointer-events:none; opacity:0; transition: opacity .25s ease;
+    padding: 12px;
+  }
+  .splash.show{ opacity:1; }
+  .splash .card{
+    pointer-events:auto; text-align:center;
+    background: rgba(8,12,22,.85);
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow: 0 20px 70px rgba(0,0,0,.7), 0 0 30px rgba(0,229,255,.25), inset 0 0 30px rgba(255,255,255,.05);
+    padding: clamp(16px, 3vw, 22px) clamp(14px, 3vw, 18px);
+    border-radius:16px;
+    width:min(520px, 92%);
+  }
+  .card h1{
+    margin:0 0 10px; font-size: clamp(22px, 4vw, 28px); line-height:1.2;
+    background: linear-gradient(90deg, var(--neon2), var(--neon1), var(--neon3));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 0 16px rgba(0,229,255,.4);
+  }
+  .card p{ margin:6px 0 12px; opacity:.9; font-size: 14px }
+  .kbd{
+    display:inline-block;
+    border:1px solid rgba(255,255,255,.15);
+    background: #0c1222;
+    padding:2px 6px; border-radius:6px; margin: 0 2px;
+    box-shadow: inset 0 0 8px rgba(255,255,255,.08);
+  }
+  footer{
+    text-align:center; font-size:12px; opacity:.75; padding: 4px 0 calc(10px + var(--safe-bottom));
+  }
+  .neon-pulse{
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ filter: drop-shadow(0 0 4px rgba(0,229,255,.7)) drop-shadow(0 0 12px rgba(255,0,200,.3)); }
+    50%{ filter: drop-shadow(0 0 12px rgba(0,229,255,.9)) drop-shadow(0 0 22px rgba(255,0,200,.6)); }
+  }
+  .shake{ animation: shake .4s linear; }
+  @keyframes shake{
+    0%{ transform: translateX(0) }
+    25%{ transform: translateX(-4px) }
+    50%{ transform: translateX(4px) }
+    75%{ transform: translateX(-2px) }
+    100%{ transform: translateX(0) }
+  }
+
+  .touch-controls{
+    position: fixed;
+    bottom: calc(12px + var(--safe-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display:flex; gap:10px; z-index:10;
+    filter: drop-shadow(0 6px 20px rgba(0,0,0,.4));
+    pointer-events: none;
+  }
+  .dpad{
+    display:grid; grid-template-columns: repeat(3, clamp(44px, 12vw, 64px));
+    grid-template-rows: repeat(3, clamp(44px, 12vw, 64px));
+    gap:6px;
+    pointer-events: auto;
+  }
+  .dpad button{
+    width:clamp(44px, 12vw, 64px); height:clamp(44px, 12vw, 64px); border-radius:12px;
+    background: linear-gradient(180deg, #0f1730, #121a36);
+    border:1px solid rgba(255,255,255,.08); color: var(--text); font-weight:800;
+    box-shadow: inset 0 0 16px rgba(0,229,255,.12);
+    font-size: clamp(16px, 4vw, 22px);
+    touch-action: manipulation;
+  }
+  .dpad button.dir{ box-shadow: 0 0 12px rgba(0,229,255,.25), inset 0 0 10px rgba(124,255,0,.15); }
+  .dpad button.blank{ opacity:0; pointer-events:none; }
+  @media (min-width: 900px){
+    .touch-controls{ display:none; }
+  }
+
+  .deploy{
+    margin: 0 clamp(8px, 3vw, 20px) 22px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.06);
+    background: linear-gradient(180deg, rgba(0,229,255,.06), rgba(0,229,255,0));
+  }
+  .deploy h3{ margin:0 0 6px; font-size:16px }
+  .deploy ol{ margin:6px 0 0 18px; }
+  .deploy li{ margin: 6px 0; }
+  .deploy code{
+    background:#0c1222; border:1px solid rgba(255,255,255,.12);
+    padding:2px 6px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .deploy .row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
+  .deploy .btn{ padding:8px 12px; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "std:events": "./evt-shim.js"
+  }
+}
+</script>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="badge neon-pulse"></div>
+      <div class="title">Mody Gaming - الثعبان النيون</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="btn-start">ابدأ / إيقاف</button>
+      <button class="btn alt" id="btn-restart">إعادة</button>
+      <button class="btn alt" id="btn-speed">السرعة: عادي</button>
+      <button class="btn alt" id="btn-size">الحجم: تلقائي</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="hud">
+      <div class="stat">
+        <span class="pill">النقاط: <b id="score">0</b></span>
+        <span class="pill">أفضل نتيجة: <b id="best">0</b></span>
+        <span class="pill">المستوى: <b id="level">1</b></span>
+      </div>
+      <div class="stat">
+        <span class="pill">حجم الشبكة: <b id="size">22 x 22</b></span>
+      </div>
+    </div>
+
+    <div class="grid-outer">
+      <div class="grid-wrap scanlines" id="wrap">
+        <canvas id="game"></canvas>
+        <div class="grid-overlay" id="grid"></div>
+        <div class="glow-edge"></div>
+
+        <div class="splash show" id="splash">
+          <div class="card">
+            <h1>مرحبا بك في Mody Gaming</h1>
+            <p>اللعبة أصبحت متوافقة تلقائياً مع الجوال والآيباد والكمبيوتر واللاب توب. المساحة دائماً مربعة وتتكيف مع الشاشة.</p>
+            <p>التحكم: ↑ ↓ ← → أو WASD — إيقاف/استمرار Space. على الجوال استخدم لوحة الاتجاهات بالأسفل.</p>
+            <div style="margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button class="btn" id="play-now">ابدأ اللعب</button>
+              <button class="btn alt" id="how">طريقة اللعب</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 2024 Mody Gaming — تصميم نيوني متجاوب لكل الشاشات</footer>
+  </section>
+
+  <section class="deploy" aria-live="polite">
+    <h3>كيف أنشر اللعبة على الويب؟</h3>
+    <ol>
+      <li>احفظ هذا الملف كـ <code>index.html</code> على جهازك.</li>
+      <li>للتجربة محلياً: افتح الملف بالنقر المزدوج أو اسحبه إلى المتصفح.</li>
+      <li>GitHub Pages:
+        <ol>
+          <li>أنشئ مستودع جديد باسم أي اسم.</li>
+          <li>ارفع ملف <code>index.html</code> إلى الفرع <code>main</code>.</li>
+          <li>من إعدادات المستودع > Pages > اختر المصدر <code>Deploy from a branch</code> والفرع <code>main</code> والمجلد <code>/root</code>.</li>
+          <li>سيظهر رابط موقعك خلال دقيقة مثل: <code>https://username.github.io/repo</code>.</li>
+        </ol>
+      </li>
+      <li>Netlify أو Vercel:
+        <ol>
+          <li>سجل الدخول، اختر “New site from Git”.</li>
+          <li>صل بالخدمة إلى مستودعك الذي يحتوي على <code>index.html</code>.</li>
+          <li>لا تحتاج إعداد بناء. انشر مباشرة.</li>
+        </ol>
+      </li>
+      <li>بدون Git: ارفع الملف إلى أي استضافة تدعم ملفات ثابتة وضعه في المجلد العام.</li>
+    </ol>
+    <div class="row">
+      <button class="btn" id="btn-download">تحميل كملف index.html</button>
+      <button class="btn alt" id="btn-copy">نسخ الملف إلى الحافظة</button>
+    </div>
+    <p id="copy-status" style="margin-top:8px; opacity:.85;"></p>
+  </section>
+
+  <div class="touch-controls" id="touch-controls">
+    <div class="dpad" aria-label="لوحة تحكم">
+      <button class="blank" aria-hidden="true"></button>
+      <button class="dir" data-dir="up" aria-label="أعلى">▲</button>
+      <button class="blank" aria-hidden="true"></button>
+
+      <button class="dir" data-dir="left" aria-label="يسار">◀</button>
+      <button class="blank" aria-hidden="true"></button>
+      <button class="dir" data-dir="right" aria-label="يمين">▶</button>
+
+      <button class="blank" aria-hidden="true"></button>
+      <button class="dir" data-dir="down" aria-label="أسفل">▼</button>
+      <button class="blank" aria-hidden="true"></button>
+    </div>
+  </div>
+
+<script type="module">
+/*
+  Neon Snake - Mody Gaming (Responsive)
+  All assets are procedurally generated (no external URLs).
+*/
+
+const canvas = document.getElementById('game');
+const wrap = document.getElementById('wrap');
+const splash = document.getElementById('splash');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const levelEl = document.getElementById('level');
+const sizeEl = document.getElementById('size');
+const btnStart = document.getElementById('btn-start');
+const btnRestart = document.getElementById('btn-restart');
+const btnSpeed = document.getElementById('btn-speed');
+const btnSize = document.getElementById('btn-size');
+const btnPlayNow = document.getElementById('play-now');
+const btnHow = document.getElementById('how');
+const gridOverlay = document.getElementById('grid');
+const touchControls = document.getElementById('touch-controls');
+
+const ctx = canvas.getContext('2d', {alpha:true});
+
+let GRID = 22;
+let CELL = 24;
+const SPEEDS = [
+  {name:'بطيء', step:150},
+  {name:'عادي', step:110},
+  {name:'سريع', step:80},
+  {name:'خارِق', step:55},
+];
+let speedIndex = 1;
+
+const GRID_MODES = [
+  {name:'تلقائي', value:'auto'},
+  {name:'كبير', value:18},
+  {name:'متوسط', value:22},
+  {name:'صغير', value:28}
+];
+let gridModeIndex = 0;
+
+let state = {
+  running: false,
+  dir: {x:1, y:0},
+  nextDir: {x:1, y:0},
+  snake: [],
+  food: null,
+  score: 0,
+  best: Number(localStorage.getItem('mody_neon_best') || 0),
+  level: 1,
+  tick: 0,
+  step: SPEEDS[speedIndex].step,
+  wrapWalls: false
+};
+
+function pickAutoGrid() {
+  const size = Math.min(wrap.clientWidth, wrap.clientHeight);
+  if (size < 340) return 16;
+  if (size < 420) return 18;
+  if (size < 520) return 20;
+  if (size < 680) return 22;
+  if (size < 820) return 24;
+  return 26;
+}
+
+function applyGridFromMode() {
+  const mode = GRID_MODES[gridModeIndex].value;
+  GRID = mode === 'auto' ? pickAutoGrid() : mode;
+  sizeEl.textContent = GRID + " x " + GRID;
+  btnSize.textContent = "الحجم: " + GRID_MODES[gridModeIndex].name;
+  resize();
+}
+
+function resize() {
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const s = Math.min(w, h);
+  CELL = Math.floor(s / GRID);
+  canvas.width = CELL * GRID;
+  canvas.height = CELL * GRID;
+  gridOverlay.style.backgroundSize = `${CELL}px ${CELL}px`;
+  sizeEl.textContent = GRID + " x " + GRID;
+}
+window.addEventListener('resize', ()=>{
+  if (GRID_MODES[gridModeIndex].value === 'auto') {
+    GRID = pickAutoGrid();
+  }
+  resize();
+}, {passive:true});
+
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', ()=>{
+    if (GRID_MODES[gridModeIndex].value === 'auto') {
+      GRID = pickAutoGrid();
+    }
+    resize();
+  }, {passive:true});
+}
+
+function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function initSnake() {
+  const cx = Math.floor(GRID/2);
+  const cy = Math.floor(GRID/2);
+  state.snake = [{x:cx-1, y:cy}, {x:cx, y:cy}, {x:cx+1, y:cy}];
+  state.dir = {x:1, y:0};
+  state.nextDir = {x:1, y:0};
+  state.score = 0;
+  state.level = 1;
+  state.tick = 0;
+  state.step = SPEEDS[speedIndex].step;
+  spawnFood();
+  updateHUD();
+}
+
+function spawnFood() {
+  let pos;
+  do {
+    pos = {x: randInt(0, GRID-1), y: randInt(0, GRID-1)};
+  } while (state.snake.some(s => s.x===pos.x && s.y===pos.y));
+  const palette = ['#00e5ff','#7cff00','#ff00e6','#ffd400','#ff3355','#9d7cff'];
+  pos.color = palette[randInt(0, palette.length-1)];
+  state.food = pos;
+}
+
+function updateHUD(){
+  scoreEl.textContent = state.score;
+  bestEl.textContent = state.best;
+  levelEl.textContent = state.level;
+  btnSpeed.textContent = "السرعة: " + SPEEDS[speedIndex].name;
+  btnSize.textContent = "الحجم: " + GRID_MODES[gridModeIndex].name;
+}
+
+function playClickSound(pitch=1.0){
+  const ac = playClickSound.ac || (playClickSound.ac = new (window.AudioContext||window.webkitAudioContext)());
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = 'triangle';
+  o.frequency.value = 320 * pitch;
+  g.gain.value = 0.0001;
+  o.connect(g).connect(ac.destination);
+  const t = ac.currentTime;
+  g.gain.exponentialRampToValueAtTime(0.2, t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.11);
+  o.start(t);
+  o.stop(t+0.12);
+}
+
+function playBoom(){
+  const ac = playClickSound.ac || (playClickSound.ac = new (window.AudioContext||window.webkitAudioContext)());
+  const o = ac.createOscillator();
+  const n = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = 'sawtooth';
+  n.type = 'square';
+  o.frequency.value = 200;
+  n.frequency.value = 40;
+  g.gain.value = 0.2;
+  o.connect(g); n.connect(g); g.connect(ac.destination);
+  const t = ac.currentTime;
+  o.frequency.exponentialRampToValueAtTime(60, t+0.35);
+  n.frequency.exponentialRampToValueAtTime(10, t+0.35);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.36);
+  o.start(t); n.start(t);
+  o.stop(t+0.37); n.stop(t+0.37);
+}
+
+function startStop(){
+  state.running = !state.running;
+  splash.classList.toggle('show', !state.running && state.score===0);
+}
+function restart(){
+  applyGridFromMode();
+  initSnake();
+  state.running = true;
+  splash.classList.remove('show');
+}
+
+btnStart.addEventListener('click', ()=>{
+  startStop();
+  playClickSound(1.2);
+});
+btnRestart.addEventListener('click', ()=>{
+  restart();
+  playClickSound(1.5);
+});
+btnSpeed.addEventListener('click', ()=>{
+  speedIndex = (speedIndex+1) % SPEEDS.length;
+  state.step = SPEEDS[speedIndex].step;
+  updateHUD();
+  playClickSound(1 + speedIndex*0.1);
+});
+btnSize.addEventListener('click', ()=>{
+  gridModeIndex = (gridModeIndex + 1) % GRID_MODES.length;
+  applyGridFromMode();
+  initSnake();
+  playClickSound(1.25);
+});
+btnPlayNow.addEventListener('click', ()=>{
+  restart();
+  playClickSound(1.4);
+});
+btnHow.addEventListener('click', ()=>{
+  alert("الهدف: اجمع الجواهر النيونية لزيادة طول الثعبان ورفع نقاطك.\nاللعبة متجاوبة بالكامل وتتكيف مع جميع الشاشات.\nالتحكم: الأسهم أو WASD. Space للإيقاف/الاستمرار.\nعلى الجوال: استخدم لوحة الاتجاهات بالأسفل.\nبالتوفيق!");
+});
+
+document.querySelectorAll('.dpad .dir').forEach(b=>{
+  const handler = (e)=>{
+    e.preventDefault();
+    const d = b.dataset.dir;
+    const map = {up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+    setDirection(map[d]);
+  };
+  b.addEventListener('touchstart', handler, {passive:false});
+  b.addEventListener('click', handler);
+});
+
+function setDirection(d){
+  if (d.x === -state.dir.x && d.y === -state.dir.y) return;
+  state.nextDir = d;
+}
+
+window.addEventListener('keydown', (e)=>{
+  const k = e.key.toLowerCase();
+  if (k === ' '){
+    e.preventDefault();
+    startStop(); return;
+  }
+  if (['arrowup','w'].includes(k)) setDirection({x:0,y:-1});
+  else if (['arrowdown','s'].includes(k)) setDirection({x:0,y:1});
+  else if (['arrowleft','a'].includes(k)) setDirection({x:-1,y:0});
+  else if (['arrowright','d'].includes(k)) setDirection({x:1,y:0});
+}, {passive:false});
+
+function drawGridGlow() {
+  const g = ctx.createRadialGradient(canvas.width*0.5, canvas.height*0.5, 10, canvas.width*0.5, canvas.height*0.5, Math.max(canvas.width, canvas.height)*0.6);
+  g.addColorStop(0, 'rgba(0,229,255,0.03)');
+  g.addColorStop(1, 'rgba(0,0,0,0.0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function drawCell(x,y, color, glowColor) {
+  const px = x*CELL, py = y*CELL;
+  const r = Math.floor(CELL*0.35);
+  ctx.shadowBlur = Math.max(6, CELL*0.5);
+  ctx.shadowColor = glowColor || color;
+  ctx.fillStyle = color;
+  roundRect(px+2, py+2, CELL-4, CELL-4, r);
+  ctx.fill();
+  const g = ctx.createLinearGradient(px,py,px,py+CELL);
+  g.addColorStop(0, 'rgba(255,255,255,.22)');
+  g.addColorStop(0.8, 'rgba(255,255,255,0)');
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = g;
+  roundRect(px+3, py+3, CELL-6, Math.max(2, CELL*0.35), r/2);
+  ctx.fill();
+}
+
+function roundRect(x,y,w,h,r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+
+function drawFood() {
+  if (!state.food) return;
+  const {x,y,color} = state.food;
+  drawCell(x,y,color,color);
+  const px = x*CELL + CELL/2, py = y*CELL + CELL/2;
+  const rad = CELL*0.6;
+  const grad = ctx.createRadialGradient(px, py, 1, px, py, rad);
+  grad.addColorStop(0, color + 'cc');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(px, py, rad, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawSnake() {
+  const segments = state.snake;
+  const head = segments[segments.length-1];
+  for (let i=0;i<segments.length;i++){
+    const s = segments[i];
+    const t = i/Math.max(1, segments.length-1);
+    const color = lerpColor('#00e5ff', '#ff00e6', t*0.7)
+    drawCell(s.x, s.y, color, color);
+  }
+  if (head){
+    const cx = head.x*CELL + CELL/2, cy = head.y*CELL + CELL/2;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowBlur = Math.max(8, CELL*0.6);
+    ctx.shadowColor = '#7cff00';
+    const eye = Math.max(2, CELL*0.09);
+    const dx = state.dir.x, dy = state.dir.y;
+    ctx.beginPath(); ctx.arc(cx + (dx*CELL*0.18) - dy*CELL*0.18, cy + (dy*CELL*0.18) + dx*CELL*0.18, eye, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + (dx*CELL*0.18) + dy*CELL*0.18, cy + (dy*CELL*0.18) - dx*CELL*0.18, eye, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function lerpColor(a, b, t){
+  const pa = hexToRgb(a), pb = hexToRgb(b);
+  const r = Math.round(pa.r + (pb.r-pa.r)*t);
+  const g = Math.round(pa.g + (pb.g-pa.g)*t);
+  const bl = Math.round(pa.b + (pb.b-pa.b)*t);
+  return `rgb(${r},${g},${bl})`;
+}
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+
+function gameOver() {
+  state.running = false;
+  playBoom();
+  wrap.classList.add('shake');
+  setTimeout(()=> wrap.classList.remove('shake'), 500);
+  state.best = Math.max(state.best, state.score);
+  localStorage.setItem('mody_neon_best', String(state.best));
+  splash.classList.add('show');
+  splash.querySelector('.card h1').textContent = 'انتهت اللعبة! نتيجتك: ' + state.score;
+}
+
+function stepGame(dt) {
+  if (!state.running) return;
+  state.tick += dt;
+  if (state.tick < state.step) return;
+  state.tick = 0;
+
+  state.dir = state.nextDir;
+
+  const head = state.snake[state.snake.length-1];
+  let nx = head.x + state.dir.x;
+  let ny = head.y + state.dir.y;
+
+  if (state.wrapWalls){
+    nx = (nx + GRID) % GRID;
+    ny = (ny + GRID) % GRID;
+  } else {
+    if (nx<0 || ny<0 || nx>=GRID || ny>=GRID){
+      return gameOver();
+    }
+  }
+
+  if (state.snake.some(s => s.x===nx && s.y===ny)){
+    return gameOver();
+  }
+
+  state.snake.push({x:nx, y:ny});
+  if (state.food && nx===state.food.x && ny===state.food.y){
+    state.score += 10;
+    playClickSound(1.8);
+    if ((state.snake.length % 5) === 0){
+      state.level++;
+      state.step = Math.max(45, Math.floor(state.step * 0.93));
+    }
+    spawnFood();
+  } else {
+    state.snake.shift();
+  }
+
+  updateHUD();
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(200, now - last);
+  last = now;
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+  drawBackShimmer(now);
+  drawFood();
+  drawSnake();
+  drawGridGlow();
+  stepGame(dt);
+  requestAnimationFrame(loop);
+}
+
+function drawBackShimmer(t){
+  const time = t*0.0015;
+  const nLines = 6;
+  for (let i=0;i<nLines;i++){
+    const y = (Math.sin(time + i)*0.5 + 0.5) * canvas.height;
+    const w = 2 + (i%3);
+    const hue = (time*80 + i*60) % 360;
+    ctx.strokeStyle = `hsla(${hue}, 90%, 60%, 0.08)`;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+}
+
+// Initialize
+applyGridFromMode();
+initSnake();
+requestAnimationFrame(loop);
+gridOverlay.style.backgroundSize = `${CELL}px ${CELL}px`;
+
+// Optional: dynamic grid opacity pulse
+let pulseT = 0;
+function pulse() {
+  pulseT += 0.03;
+  const o = 0.25 + Math.sin(pulseT)*0.1;
+  gridOverlay.style.opacity = o.toFixed(3);
+  requestAnimationFrame(pulse);
+}
+pulse();
+
+// Show touch controls only on coarse pointers
+const isCoarse = matchMedia('(pointer: coarse)').matches;
+touchControls.style.display = isCoarse ? 'block' : 'none';
+
+// Prevent page scroll on touchmove over controls
+['touchmove','touchstart'].forEach(ev=>{
+  touchControls.addEventListener(ev, e=> e.preventDefault(), {passive:false});
+});
+
+// Audio resume on first interaction
+['click','touchstart'].forEach(ev=>{
+  window.addEventListener(ev, ()=>{
+    const AC = (window.AudioContext||window.webkitAudioContext);
+    if (AC && playClickSound.ac && playClickSound.ac.state==='suspended'){
+      playClickSound.ac.resume();
+    }
+  }, {once:true, passive:true});
+});
+
+/* Deployment helpers: download/copy this page as index.html */
+const btnDownload = document.getElementById('btn-download');
+const btnCopy = document.getElementById('btn-copy');
+const copyStatus = document.getElementById('copy-status');
+
+function getThisHTML(){
+  const doctype = '<!DOCTYPE html>';
+  const html = document.documentElement.outerHTML;
+  return doctype + '\n' + html;
+}
+
+btnDownload?.addEventListener('click', ()=>{
+  const blob = new Blob([getThisHTML()], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+});
+
+btnCopy?.addEventListener('click', async ()=>{
+  try{
+    const data = getThisHTML();
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(data);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = data; document.body.appendChild(ta);
+      ta.style.position='fixed'; ta.style.opacity='0'; ta.select();
+      document.execCommand('copy'); ta.remove();
+    }
+    copyStatus.textContent = 'تم نسخ الملف إلى الحافظة. الصقه في ملف جديد باسم index.html.';
+  }catch(e){
+    copyStatus.textContent = 'تعذر النسخ تلقائياً. حاول تحميل الملف ثم ارفعه إلى الاستضافة.';
+  }
+});
+</script>
+</body>
+</html>
